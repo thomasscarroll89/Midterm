@@ -74,7 +74,8 @@ setMethod("fitBMA", "BMAdata", function(object="BMAdata", g=3){
     r.squared.k <- as.numeric(output.1[k+1,i]) #let this represent the R^2 value in a given model
     B.Mk.M0[i] <- ((1 + g)^((n - p.sub.k - 1)/2))*((1 + (g*(1 - r.squared.k)))^(-((n - 1)/2)))
   }
-  posterior.model.odds <- B.Mk.M0/sum(B.Mk.M0) #posterior.model.odds is p(M_{k}|Y) on slide 10
+  posterior.model.odds <- matrix(B.Mk.M0/sum(B.Mk.M0), nrow=1) #posterior.model.odds is p(M_{k}|Y) on slide 10
+  colnames(posterior.model.odds) <-  paste(rep("Model", length=q), 1:q, sep=" ") 
   final.output[["posterior.model.odds"]] <- posterior.model.odds
   
   #FIFTH, we need to calculate the posterior expected values for each coefficient. We use the formula on slide 26
@@ -84,6 +85,8 @@ setMethod("fitBMA", "BMAdata", function(object="BMAdata", g=3){
     model.numbers <- which(output.1[i,]!="") #calculates which models a variable appears in
     posterior.expected.value[i] <- sum(posterior.model.odds[model.numbers] * expected.betas[i,model.numbers])
   }
+  posterior.expected.value <- matrix(posterior.expected.value, nrow=1)
+  colnames(posterior.expected.value) <- paste(rep("X", k), 1:k, sep="")
   final.output[["posterior.expected.values"]] <- posterior.expected.value
   
   #SIXTH, we need to calculate the posterior probability that each coefficient is non-zero, which we get by adding up
@@ -93,6 +96,8 @@ setMethod("fitBMA", "BMAdata", function(object="BMAdata", g=3){
     model.numbers <- which(output.1[i,]!="")
     posterior.probability[i] <- sum(posterior.model.odds[model.numbers])
   }
+  posterior.probability <- matrix(posterior.probability, nrow=1)
+  colnames(posterior.probability) <- paste(rep("X", k), 1:k, sep="")
   final.output[["posterior.probability"]] <- posterior.probability
   return(final.output)
 })
