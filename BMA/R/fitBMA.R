@@ -86,5 +86,13 @@ setMethod("fitBMA", "BMAdata", function(object="BMAdata", g=3){
   }
   final.output[["posterior.expected.values"]] <- posterior.expected.value
   
+  #SIXTH, we need to calculate the posterior probability that each coefficient is non-zero, which we get by adding up
+  #all weight assigned to each model that includes that coefficient (i.e. the posterior.model.odds). 
+  posterior.probability <- numeric(length=k)
+  for(i in 1:k){
+    model.numbers <- which(output.1[i,]!="")
+    posterior.probability[i] <- sum(posterior.model.odds[model.numbers])
+  }
+  final.output[["posterior.probability"]] <- posterior.probability
   return(final.output)
 })
