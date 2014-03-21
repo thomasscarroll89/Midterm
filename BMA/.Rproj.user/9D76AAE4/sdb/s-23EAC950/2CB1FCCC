@@ -1,0 +1,17 @@
+{
+    "contents" : "#' Bayesian Model Averaging\n#' \n#' Takes objects of class \\code{BMAdata} (or any of its subclasses) and runs an OLS regression for every possible combination of variables, and returns a matrix of coefficient estimates for each model, as well as the R^2 value for each model. \n#' \n#' @param BMAdata An object of class BMAdata, which must first be created using the \"new\" function. \n#' \n#' @return A matrix of coefficient estimates for each model that was run, along with the R^2 value for each of these models. \n#' @author Thomas Carroll: \\email{thomasscarroll89@gmail.com}\n#' @rdname fitBMA\n#' @export\nsetGeneric(\"fitBMA\", function(object=\"BMAdata\"){\n  standardGeneric(\"fitBMA\")\n})\n\n#' @export\nsetMethod(\"fitBMA\", \"BMAdata\", function(object=\"BMAdata\"){\n  k <- ncol(object@covariates) #Let k be the number of predictor variables (not including intercept)\n  colnames(object@covariates) <- paste(rep(\"X\", length=k), 1:k, sep=\"\")\n  model.combinations <- vector(mode=\"list\") #Create object \"model.combinations\", which is a list containing all of the different combinations of variables \n  number.of.models <- c(1) #do 1, for the model with just an intercept\n  for(i in 1:k){\n    model.combinations[[i]] <- combn(c(1:k), m=i)\n    number.of.models <- append(number.of.models, values=ncol(model.combinations[[i]]), after=length(number.of.models))\n  }\n  #CREATE basic structure of the output matrix\n  output2 <- matrix(NA, nrow=k+2, ncol=sum(number.of.models))\n  rownames(output2) <- c(\"Intercept\", colnames(object@covariates), \"R^2\")\n  colnames(output2) <- paste(rep(\"Model\", length=sum(number.of.models)), 1:sum(number.of.models), sep=\" \")\n  #BEGIN running linear models; start with model using only an intercept\n  model.base <- lm(object@depvar ~ 1)\n  model.base.coef <- model.base$coef\n  output2[1,1] <- model.base.coef\n  r.squared <- summary(model.base)$r.squared  \n  count <- 1\n  for(i in 1:length(model.combinations)){\n    for(j in 1:ncol(model.combinations[[i]])){\n      count <- count + 1\n      variable.numbers <- model.combinations[[i]][,j]\n      model <- lm(object@depvar ~ object@covariates[,c(variable.numbers)])\n      coefficients <- model$coef\n      output2[c(1, variable.numbers + 1),count] <- coefficients\n      r.squared <- append(r.squared, values=summary(model)$r.squared, after=length(r.squared))\n    }\n  }\n  output2[k+2,] <- r.squared  \n  output <- as.data.frame(output2)\n  output <- round(output, 4)\n  output[is.na(output)] <- \"\"\n  return(output)\n})",
+    "created" : 1395367411784.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1998011321",
+    "id" : "2CB1FCCC",
+    "lastKnownWriteTime" : 1395367990,
+    "path" : "~/GitHub/Midterm/BMA/R/fitBMA.R",
+    "project_path" : "R/fitBMA.R",
+    "properties" : {
+        "tempName" : "Untitled2"
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}
