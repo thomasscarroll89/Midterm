@@ -5,5 +5,10 @@ Version: 1.0
 Date: 2014-03-20
 Author: Thomas Carroll
 Maintainer: Thomas Carroll <thomasscarroll89@gmail.com>
-Description: Conduct Bayesian Model Averaging (BMA) on a user-supplied dataset. Runs multiple linear (OLS) regressions for every possible combination of user-supplied predictor variables, then returns the estimated coefficients and R^2 values from each of these models, along with the posterior model odds, posterior expected values, and posterior probabilities after performing Bayesian Model Averaging. 
+Description: Conduct Bayesian Model Averaging (BMA) on a user-supplied dataset.
+    Runs multiple linear (OLS) regressions for every possible combination of
+    user-supplied predictor variables, then returns the estimated coefficients
+    and R^2 values from each of these models, along with the posterior model
+    odds, posterior expected values, and posterior probabilities after
+    performing Bayesian Model Averaging.
 License: GPL (>= 2)
