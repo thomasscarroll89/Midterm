@@ -8,7 +8,7 @@
 #' @author Thomas Carroll: \email{thomasscarroll89@gmail.com}
 #' @rdname fitBMA
 #' @export
-setGeneric("fitBMA", function(object="BMAdata"){
+setGeneric("fitBMA", function(object="BMAdata", g=3){
   standardGeneric("fitBMA")
 })
 
@@ -61,18 +61,22 @@ setMethod("fitBMA", "BMAdata", function(object="BMAdata", g=3){
     #3.3 Next we clean up the output a little bit by doing some rounding and replacing NAs with empty character strings. 
     output.1 <- as.data.frame(output2)
     output.1 <- round(output.1, 4)
-    output.1[is.na(output.1)] <- ""
-    # So output.1 is a matrix of coefficient estimates and R^2 values for each model
-
+    output.1[is.na(output.1)] <- "" # So output.1 is a matrix of coefficient estimates and R^2 values for each model
+    final.output <- list(output.1)
+    names(final.output) <- c("Coefficients.and.R(^2)")
+  
   #FOURTH, we need to calculate the posterior model odds for each model. Here we make use of the formula
     #provided in the slides.
-  B.Mk.MO <- numeric(length=q) #this will be the vector that we store the values of B[M_{k}:M_{0}] into for each model. See slide 25
+  B.Mk.M0 <- numeric(length=q) #this will be the vector that we store the values of B[M_{k}:M_{0}] into for each model. See slide 25
   n <- nrow(x.stand) #let n be the number of observations
   for(i in 1:q){
     p.sub.k <- sum(which(output.1[,i]!="")) - 1 #this represents number of independent variables in a given model. We subtract one because the R^2 value is recorded in output.1 and we don't want to count that as an independent variable
-    r.squared.k <- output.1[k+1,i] #let this represent the R^2 value in a given model
+    r.squared.k <- as.numeric(output.1[k+1,i]) #let this represent the R^2 value in a given model
     B.Mk.M0[i] <- ((1 + g)^((n - p.sub.k - 1)/2))*((1 + (g*(1 - r.squared.k)))^(-((n - 1)/2)))
   }
   posterior.model.odds <- B.Mk.M0/sum(B.Mk.M0) #posterior.model.odds is p(M_{k}|Y) on slide 10
+  final.output[["posterior.model.odds"]] <- posterior.model.odds
   
+  
+  return(final.output)
   })
