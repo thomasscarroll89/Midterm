@@ -77,6 +77,14 @@ setMethod("fitBMA", "BMAdata", function(object="BMAdata", g=3){
   posterior.model.odds <- B.Mk.M0/sum(B.Mk.M0) #posterior.model.odds is p(M_{k}|Y) on slide 10
   final.output[["posterior.model.odds"]] <- posterior.model.odds
   
+  #FIFTH, we need to calculate the posterior expected values for each coefficient. We use the formula on slide 26
+  expected.betas <- (g/(g + 1))*as.matrix(sapply(output.1[-c(k+1),], as.numeric)) #this returns a matrix containing the (weighted) coefficient estimates for each model
+  posterior.expected.value <- numeric(length=k)
+  for(i in 1:k){
+    model.numbers <- which(output.1[i,]!="") #calculates which models a variable appears in
+    posterior.expected.value[i] <- sum(posterior.model.odds[model.numbers] * expected.betas[i,model.numbers])
+  }
+  final.output[["posterior.expected.values"]] <- posterior.expected.value
   
   return(final.output)
-  })
+})
