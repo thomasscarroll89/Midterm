@@ -4,6 +4,7 @@
 #' 
 #' @param BMAdata An object of class BMAdata, which must first be created using the "new" function. 
 #' @param g A user-supplied single numerical value. 
+#' @param parallel Dummy telling R whether to run the code in parallel or not; the section of the code that runs all of the linear models can be run in parallel. By default this is set to FALSE. User must still load relevant libraries (e.g. doMC, multicore, foreach, etc.) and specify the number of cores before running the function.
 #' 
 #' @return A list containing 4 elements. The first element is a matrix of coefficient estimates for each model that was run, along with the R^2 value for each of these models. The second element is a vector (really a matrix, but only one row) containing the posterior model odds for each of the OLS models that were run. The third element is also a one-row matrix containing the posterior expected values (e.g. coefficient estimates) that were derived using Bayesian Model Averaging. Finally the fourth element is a one-row matrix containing the posterior probability that each of the coefficient estimates is non-zero. 
 #' @author Thomas Carroll: \email{thomasscarroll89@gmail.com}
@@ -15,20 +16,20 @@
 #' test <- new("BMAdata", depvar=Y, covariates=cbind(X1, X2, X3)) 
 #' fitBMA(test)
 #' @export
-setGeneric("fitBMA", function(object="BMAdata", g=3){
+setGeneric("fitBMA", function(object="BMAdata", g=3, parallel=FALSE){
   standardGeneric("fitBMA")
 })
 
 #' @export
-setMethod("fitBMA", "BMAdata", function(object="BMAdata", g=3){
+setMethod("fitBMA", "BMAdata", function(object="BMAdata", g=3, parallel=FALSE){
+  library(plyr)
   k <- ncol(object@covariates) #Let k be the number of predictor variables (not including intercept)
-
-  #FIRST we need to standardize the variables.
-  y.stand <- (object@depvar - mean(object@depvar))/sd(object@depvar)
-  x.stand <- matrix(NA, nrow=nrow(object@covariates), ncol=k)
-  for(i in 1:k){
-    x.stand[,i] <- (object@covariates[,i] - mean(object@covariates[,i]))/sd(object@covariates[,i])
+  #FIRST we need to standardize the variables. I first create a generic function that will standardize a vector that is plugged into it. 
+  standardize <- function(x){ #Let x be a vector of length greater than 1
+    (x - mean(x))/sd(x)
   }
+  y.stand <- standardize(object@depvar)
+  x.stand <- apply(object@covariates, 2, standardize)
   colnames(x.stand) <- paste(rep("X", length=k), 1:k, sep="") #add variable names to keep track of the variables more easily
   
   #SECOND we run every possible combination of linear models (none including an intercept, since we standardized the variables)
@@ -47,26 +48,27 @@ setMethod("fitBMA", "BMAdata", function(object="BMAdata", g=3){
     }
 
   #THIRD, we run the actual models.
-    #3.1, we create the basic structure of the output matrix
-    output2 <- matrix(NA, nrow=k+1, ncol=q)
-    rownames(output2) <- c(colnames(x.stand), "R^2")
-    colnames(output2) <- paste(rep("Model", length=q), 1:q, sep=" ")
-    #3.2, we run linear models. The for loops run 2^k - 1 models, one at a time. 
-    count <- 0  #The "count" variable keeps track of which model number we are currently on; it helps when we're plugging in coefficient
-                # values and R squared values by basically telling us which column of the output matrix
-                #to plug these values into
-    for(i in 1:length(model.combinations)){
-      for(j in 1:ncol(model.combinations[[i]])){
+    #3.1 First I create a function that will calculate a bunch of linear regressions. This makes use of the list of all possible model combinations created in step 2 above
+    my.test <- function(x){
+      #The x argument is just a matrix; in this case the function was designed to work on the list-like object model.combinations created above, so x is just one element of the list model.combinations
+      output <- matrix(NA, nrow=k+1, ncol=ncol(x))
+      count <- 0
+      for(i in 1:ncol(x)){
         count <- count + 1
-        variable.numbers <- model.combinations[[i]][,j]
+        variable.numbers <- x[,i]
         model <- lm(y.stand ~ x.stand[,c(variable.numbers)] - 1)
-        coefficients <- model$coef
-        output2[c(variable.numbers),count] <- coefficients
-        output2[c(k+1),count] <- summary(model)$r.squared
+        output[c(variable.numbers),count] <- model$coef
+        output[c(k+1),count] <- summary(model)$r.squared
       }
+      return(output)
     }
-    #3.3 Next we clean up the output a little bit by doing some rounding and replacing NAs with empty character strings. 
-    output.1 <- as.data.frame(output2)
+    try.this <- llply(model.combinations, .fun=my.test, .parallel=parallel) #returns a list containing the coefficient estimates and R^2 values for all the models
+    #Next we have to convert the above list into a single matrix
+    try.this <- matrix(unlist(try.this), nrow=k+1, ncol=q)
+    rownames(try.this) <- c(colnames(x.stand), "R^2")
+    colnames(try.this) <- paste(rep("Model", length=q), 1:q, sep=" ")
+    #3.2 Next we clean up the output a little bit by doing some rounding and replacing NAs with empty character strings. 
+    output.1 <- as.data.frame(try.this)
     output.1 <- round(output.1, 4)
     output.1[is.na(output.1)] <- "" # So output.1 is a matrix of coefficient estimates and R^2 values for each model
     final.output <- list(output.1)

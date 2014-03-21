@@ -2,13 +2,20 @@
 \alias{fitBMA}
 \title{Bayesian Model Averaging}
 \usage{
-fitBMA(object = "BMAdata", g = 3)
+fitBMA(object = "BMAdata", g = 3, parallel = FALSE)
 }
 \arguments{
   \item{BMAdata}{An object of class BMAdata, which must
   first be created using the "new" function.}
 
   \item{g}{A user-supplied single numerical value.}
+
+  \item{parallel}{Dummy telling R whether to run the code
+  in parallel or not; the section of the code that runs all
+  of the linear models can be run in parallel. By default
+  this is set to FALSE. User must still load relevant
+  libraries (e.g. doMC, multicore, foreach, etc.) and
+  specify the number of cores before running the function.}
 }
 \value{
 A list containing 4 elements. The first element is a matrix
