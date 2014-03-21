@@ -1,9 +1,9 @@
 Package: BMA
 Type: Package
-Title: What the package does (short line)
+Title: Bayesian Model Averaging
 Version: 1.0
 Date: 2014-03-20
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
-License: What license is it under?
+Author: Thomas Carroll
+Maintainer: Thomas Carroll <thomasscarroll89@gmail.com>
+Description: Conduct Bayesian Model Averaging (BMA) on a user-supplied dataset. Runs multiple linear (OLS) regressions for every possible combination of user-supplied predictor variables, then returns the estimated coefficients and R^2 values from each of these models, along with the posterior model odds, posterior expected values, and posterior probabilities after performing Bayesian Model Averaging. 
+License: GPL (>= 2)

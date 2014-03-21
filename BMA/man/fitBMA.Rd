@@ -2,7 +2,7 @@
 \alias{fitBMA}
 \title{Bayesian Model Averaging}
 \usage{
-fitBMA(object = "BMAdata")
+fitBMA(object = "BMAdata", g = 3)
 }
 \arguments{
   \item{BMAdata}{An object of class BMAdata, which must
