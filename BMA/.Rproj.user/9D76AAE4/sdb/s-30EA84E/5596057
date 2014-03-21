@@ -1,0 +1,17 @@
+{
+    "contents" : "x1 <- rnorm(100, 100, 50)\nx2 <- rnorm(100, 50, 10)\nx3 <- rnorm(100, 75, 30)\ny <- 12 + 3*x1 - 6*x2 + 2*x3  + rnorm(100, 10, 5)\ntest <- new(\"BMAdata\", depvar=y, covariates=cbind(x1, x2, x3))\nfitBMA(test)\n",
+    "created" : 1395370096832.000,
+    "dirty" : true,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "2131062851",
+    "id" : "5596057",
+    "lastKnownWriteTime" : 13229740524830817,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}

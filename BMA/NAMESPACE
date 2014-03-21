@@ -1,1 +1,5 @@
-exportPattern("^[[:alpha:]]+")
+export()
+export(fitBMA)
+exportClasses(BMAdata)
+exportMethods(fitBMA)
+exportMethods(initialize)
